@@ -1054,18 +1054,20 @@
         window.selectRegion = function(location) {
             selectedRegionLocation = location;
             document.getElementById('regionSelect').value = location;
+            
+            // 모든 업데이트 수행
             showRegionDetail(location);
-            searchInput.value = '';
-            searchResults.classList.add('hidden');
-            
-            // 차트 업데이트
             updateScatterChart();
-            
-            // 순위 테이블 업데이트
             updateRankingTables();
             
-            // 상단으로 스크롤
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // 검색창 초기화
+            if (searchInput) searchInput.value = '';
+            if (searchResults) searchResults.classList.add('hidden');
+            
+            // 항상 최상단으로 스크롤 (강제)
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 50);
         };
 
         // 전체 보기 함수
@@ -1079,10 +1081,25 @@
 
         // 스크롤 함수
         window.scrollToSection = function(sectionId) {
-            event.preventDefault();
-            const element = document.getElementById(sectionId);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (event) event.preventDefault();
+            
+            // 먼저 최상단으로 스크롤
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // dashboard 클릭 시 전체 보기로 전환
+            if (sectionId === 'dashboard') {
+                if (document.getElementById('regionSelect').value !== 'all') {
+                    document.getElementById('regionSelect').value = 'all';
+                    showAllRegions();
+                }
+            } else {
+                // 다른 섹션은 약간의 지연 후 해당 섹션으로 스크롤
+                setTimeout(() => {
+                    const element = document.getElementById(sectionId);
+                    if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 100);
             }
             
             // 메뉴 활성화 상태 변경
@@ -1090,8 +1107,14 @@
                 link.classList.remove('bg-indigo-50', 'text-indigo-700');
                 link.classList.add('text-gray-600');
             });
-            event.target.closest('.menu-link').classList.add('bg-indigo-50', 'text-indigo-700');
-            event.target.closest('.menu-link').classList.remove('text-gray-600');
+            
+            if (event && event.target) {
+                const menuLink = event.target.closest('.menu-link');
+                if (menuLink) {
+                    menuLink.classList.add('bg-indigo-50', 'text-indigo-700');
+                    menuLink.classList.remove('text-gray-600');
+                }
+            }
         };
 
         // 지역 선택 이벤트
@@ -1152,54 +1175,63 @@
         const ctxScatter = document.getElementById('scatterChart').getContext('2d');
         
         function createScatterData() {
-            const datasets = [
-                {
-                    label: 'Cluster 0 (Safe)',
-                    data: clusteredData.filter(d => d.cluster === 0 && d.Location !== selectedRegionLocation).map(d => ({
-                        x: d.Injuries_1000, 
-                        y: d.Accidents_1000,
-                        label: d.Location
-                    })),
-                    backgroundColor: '#F97316',
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                },
-                {
-                    label: 'Cluster 1 (Caution)',
-                    data: clusteredData.filter(d => d.cluster === 1 && d.Location !== selectedRegionLocation).map(d => ({
-                        x: d.Injuries_1000, 
-                        y: d.Accidents_1000,
-                        label: d.Location
-                    })),
-                    backgroundColor: '#3B82F6',
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                },
-                {
-                    label: 'Cluster 2 (Danger)',
-                    data: clusteredData.filter(d => d.cluster === 2 && d.Location !== selectedRegionLocation).map(d => ({
-                        x: d.Injuries_1000, 
-                        y: d.Accidents_1000,
-                        label: d.Location
-                    })),
-                    backgroundColor: '#22C55E',
-                    pointRadius: 6,
-                    pointHoverRadius: 8
-                },
-                {
-                    label: 'Centroids',
-                    data: centroids.map(c => ({
-                        x: c.Injuries_1000,
-                        y: c.Accidents_1000
-                    })),
-                    backgroundColor: '#000000',
-                    pointRadius: 10,
-                    pointStyle: 'cross',
-                    pointHoverRadius: 12
-                }
-            ];
+            const datasets = [];
 
-            // 선택된 지역을 맨 마지막에 추가 (최상위 레이어)
+            // 1. 먼저 일반 클러스터 점들 추가 (맨 아래 레이어)
+            datasets.push({
+                label: 'Cluster 0 (Safe)',
+                data: clusteredData.filter(d => d.cluster === 0 && d.Location !== selectedRegionLocation).map(d => ({
+                    x: d.Injuries_1000, 
+                    y: d.Accidents_1000,
+                    label: d.Location
+                })),
+                backgroundColor: '#F97316',
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                order: 3  // 낮은 우선순위
+            });
+
+            datasets.push({
+                label: 'Cluster 1 (Caution)',
+                data: clusteredData.filter(d => d.cluster === 1 && d.Location !== selectedRegionLocation).map(d => ({
+                    x: d.Injuries_1000, 
+                    y: d.Accidents_1000,
+                    label: d.Location
+                })),
+                backgroundColor: '#3B82F6',
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                order: 3  // 낮은 우선순위
+            });
+
+            datasets.push({
+                label: 'Cluster 2 (Danger)',
+                data: clusteredData.filter(d => d.cluster === 2 && d.Location !== selectedRegionLocation).map(d => ({
+                    x: d.Injuries_1000, 
+                    y: d.Accidents_1000,
+                    label: d.Location
+                })),
+                backgroundColor: '#22C55E',
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                order: 3  // 낮은 우선순위
+            });
+
+            // 2. 중심점 추가 (중간 레이어)
+            datasets.push({
+                label: 'Centroids',
+                data: centroids.map(c => ({
+                    x: c.Injuries_1000,
+                    y: c.Accidents_1000
+                })),
+                backgroundColor: '#000000',
+                pointRadius: 12,
+                pointStyle: 'cross',
+                pointHoverRadius: 15,
+                order: 2  // 중간 우선순위
+            });
+
+            // 3. 선택된 지역을 맨 마지막에 추가 (최상위 레이어)
             if (selectedRegionLocation) {
                 const selectedRegion = clusteredData.find(d => d.Location === selectedRegionLocation);
                 if (selectedRegion) {
@@ -1210,13 +1242,13 @@
                             y: selectedRegion.Accidents_1000,
                             label: selectedRegion.Location
                         }],
-                        backgroundColor: '#EF4444',
-                        borderColor: '#DC2626',
-                        borderWidth: 3,
-                        pointRadius: 14,
+                        backgroundColor: '#FF0000',
+                        borderColor: '#FFFFFF',
+                        borderWidth: 4,
+                        pointRadius: 16,
                         pointStyle: 'star',
-                        pointHoverRadius: 18,
-                        order: 0  // 최상위 우선순위
+                        pointHoverRadius: 20,
+                        order: 1  // 최고 우선순위
                     });
                 }
             }
