@@ -298,9 +298,9 @@
                         <div class="flex items-center justify-between mb-6">
                             <h3 class="text-lg font-bold text-gray-800">전국 클러스터 분포</h3>
                             <div class="flex gap-3 text-xs">
-                                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-orange-500"></span>안전</span>
-                                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-blue-500"></span>주의</span>
-                                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-green-500"></span>위험</span>
+                                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-green-500"></span>안전</span>
+                                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-orange-500"></span>주의</span>
+                                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-500"></span>위험</span>
                             </div>
                         </div>
                         <div class="flex-1 relative w-full h-full">
@@ -1198,7 +1198,7 @@
                     y: d.Accidents_1000,
                     label: d.Location
                 })),
-                backgroundColor: '#F97316',
+                backgroundColor: '#22C55E',  // 초록색 (안전)
                 pointRadius: 4,
                 pointHoverRadius: 6,
                 order: 3  // 낮은 우선순위
@@ -1211,7 +1211,7 @@
                     y: d.Accidents_1000,
                     label: d.Location
                 })),
-                backgroundColor: '#3B82F6',
+                backgroundColor: '#F97316',  // 주황색 (주의)
                 pointRadius: 4,
                 pointHoverRadius: 6,
                 order: 3  // 낮은 우선순위
@@ -1224,7 +1224,7 @@
                     y: d.Accidents_1000,
                     label: d.Location
                 })),
-                backgroundColor: '#22C55E',
+                backgroundColor: '#EF4444',  // 빨간색 (위험)
                 pointRadius: 6,
                 pointHoverRadius: 8,
                 order: 3  // 낮은 우선순위
@@ -1334,7 +1334,7 @@
                 datasets: [{
                     label: '평균 부상자수',
                     data: [avgCluster0, avgCluster1, avgCluster2],
-                    backgroundColor: ['#F97316', '#3B82F6', '#22C55E'],
+                    backgroundColor: ['#22C55E', '#F97316', '#EF4444'],  // 초록, 주황, 빨강
                     borderRadius: 8,
                     barThickness: 60
                 }]
