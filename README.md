@@ -5,10 +5,6 @@
 
 전국 225개 시군구의 어린이 교통사고 데이터를 K-means 클러스터링으로 분석하여 지역별 안전도를 시각화한 인터랙티브 대시보드입니다.
 
-![Dashboard Preview](https://img.shields.io/badge/Status-Active-success)
-![Tech](https://img.shields.io/badge/Tech-HTML%20%7C%20JavaScript%20%7C%20Chart.js-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
-
 ---
 
 ## 📊 주요 기능
